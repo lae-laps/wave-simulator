@@ -1,5 +1,3 @@
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/Mouse.hpp>
 #include <iostream>
 #include <math.h>
 #include <SFML/Graphics.hpp>
@@ -55,7 +53,7 @@ int main() {
 	settings.antialiasingLevel = 8;
 
     // create main window
-    sf::RenderWindow window(sf::VideoMode(FRAME.x, FRAME.y), "Simulador de ondas en R2", sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(FRAME.x, FRAME.y), "doppler effect", sf::Style::Default, settings);
 
     window.setFramerateLimit(60);
 
@@ -86,6 +84,16 @@ int main() {
     };*/
 
 	std::vector<Source> sources = {};
+			
+	Source source;
+	source.position = sf::Vector2f(0, FRAME.y / 2);
+	source.amplitude = 200.0;
+	source.wavelength = 100.0;
+	source.velocity = 3.0;
+	source.timeOfCreation = 0;
+
+	sources.push_back(source);
+
 
 	unsigned int time = 0;
 
@@ -106,22 +114,16 @@ int main() {
             // switch over sf::Event(s) union
             // keypress and mouse first for speed
 
-			if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-			
-				Source newSource;
-				newSource.position = sf::Vector2f(event.mouseButton.x, event.mouseButton.y);
-				newSource.amplitude = 200.0;
-				newSource.wavelength = 200.0;
-				newSource.velocity = 8.0;
-				newSource.timeOfCreation = time;
-
-				sources.push_back(newSource);
-
-			} else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R) {
-
-				time = 0;
-				sources = {};
-
+			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::R) {
+					time = 0;
+					sources = {};
+				} else if (event.key.code == sf::Keyboard::S) {
+					time = 0;
+					for (size_t i = 0; i < sources.size(); i++) {
+						sources[i].timeOfCreation = 0;
+					}
+				}
 			} else if (event.type == sf::Event::Closed) {
 				window.close();
 			}
@@ -142,9 +144,14 @@ int main() {
             }
         }
 
+        sources[0].position += sf::Vector2f(8, 0);
+        if (sources[0].position.x == FRAME.x) {
+			sources[0].position = sf::Vector2f(0, sources[0].position.y);
+        }
+
 		time++;
 
-		timeText.setString("time[ms] : " + std::to_string(time) + "\ncreate source [l-click]\nreset [r]");
+		timeText.setString("time[ms] : " + std::to_string(time) + "\ncreate source [l-click]\nreset [r]\nrestart [s]");
 		window.draw(timeText);
 
         // update the window
